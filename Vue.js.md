@@ -105,7 +105,7 @@ vm.a = 2 // a被修改为2 Vue对象也会改变
 
 ==生命周期钩子自动绑定了this，所以不能使用箭头函数来声明一个钩子函数==
 
-[生命周期图示](C:\Users\dell\29237\笔记\lifecycle.png)
+[生命周期图示](.\lifecycle.png)
 
 :arrow_up_small: 实例对象前beforeCreated：
 
