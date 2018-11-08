@@ -1649,10 +1649,17 @@ for(var i = 0; i < eleList.length; i++) {
 }
 ```
 
-## 31. `offsetWidth`和`offsetHeight`
+## 31. Array.find()和Array.findIndex()
 
 ```javascript
+let arr = [{a:xxx},{b:ooo}]
+// find 需求：返回等元素中键值为a的元素
+// find可以直接这样写
+arr.find(item=>item['a'])
+//=> {a:xxx}
 
+// 如果是想要这个元素的索引
+arr.findIndex(item=>item['a'])
 ```
 
 

@@ -211,3 +211,63 @@ exports = fn
         6）npm update 模块名    更新模块
     
         7）npm view 模块名 versions 显示模块可以使用的版本
+# 2. NodeJS事件编程
+
+## 2.1  事件模块使用
+
+相当于自定义事件和触发
+
+**ES5**
+
+```javascript
+// 引入events模块
+var eventEmitter = require('events').EventEmitter;
+// 实例EventEmitter对象
+var event = new eventEmitter（）；
+// 注册自定义事件
+// 参数一：事件名称
+// 参数二：事件处理函数
+event.on('myEvent', function () {/////});
+// 触发事件
+// 参数一：触发事件类型
+// 参数二：传递的参数
+event.emit('myEvent', '参数')
+```
+
+**ES6**
+
+```javascript
+// 引入events模块
+let Events = require('events');
+// 继承Events类
+class Event extends Events{};
+// 实例Event对象
+let event = new Event();
+
+event.on('myEvent', function () {/////});
+event.emit('myEvent', '参数')
+```
+
+本质上`ES5`的`eventEmitter`和`ES6`的`Events`是一样的
+
+## 2.2 其他方法
+
+```javascript
+// 在注册事件之前设置最大注册事件数
+event.setMaxListeners(20)
+
+// 注册一个只能触发一次的事件
+event.once(type, fn)
+
+// 移除所有监听器
+removeAllListeners()// 移除所有监听器
+removeAllListeners(type)// 移除所有该类型的监听器
+
+// 移除监听器
+removeListener()
+```
+
+
+
+
+
