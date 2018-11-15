@@ -1804,21 +1804,34 @@ function print(data1, data2, data3) {
 
 ```javascript
 function throttle(fn, delay) {
-    let last;
+    let last;// 利用闭包将last保存在外面，不然每次调用下面的函数都会重新定义last
     return (...args) => {
         let _this = this;
         let now = Date.now();
         if (last && now < last + delay) {
-            clearTimeout(fn.timerId);
-            fn.timerId = setTimeout(() => {
+            clearTimeout(fn.timerId);//如果now始终小于last + delay时
+            						// 无论触发多少次都会被清除，注意清除的是上一次的定时器
+            fn.timerId = setTimeout(() => {// 始终保留最后一次定时器 //这样就能保证只有一个定时器
                 fn.apply(_this, args);
                 last = now;
             }, delay)
         } else {
+            //1.第一次会进入
+            //2.进入一次定时器后由于last被重新赋值，由于定时器走过了delay时间，所以此时的now>=last+delay
+            //又会进入一次
+            //3. 或者一直触发事件，上面的if会一直运行直到now>last+delay,就会运行这里
             last = now;
             fn.apply(_this, args);
         }
     }
 }
+```
+
+### 33.5 使用注意
+
+```javascript
+// 最好在外部先获取节流或者防抖后的函数
+let fn = throttle(fn, delay)
+fn(args)//不然会发生无法使用的情况
 ```
 
