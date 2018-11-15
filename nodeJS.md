@@ -267,7 +267,384 @@ removeAllListeners(type)// 移除所有该类型的监听器
 removeListener()
 ```
 
+# 3. 缓存区
+
+老版本：
+
+```javascript
+// 创建缓存区
+let buf = new Buffer(10)//指定10字节大小的缓存区
+	    = new Buffer([97, 98, 99])//指定按编码存入字符（只能是数字
+		= new Buffer('xxx', 'utf-8')// 指定存入字符串
+```
+
+新版本：
+
+```javascript
+//参数只能是数字
+let buf = Buffer.alloc(128)// 指定128字节的缓存区
+
+// 等价于上面几个方法
+const buf4 = Buffer.from([1, 2, 3]);
+const buf5 = Buffer.from('tést');
+const buf6 = Buffer.from('xxx', 'utf-8');
+```
+
+共同的
+
+```javascript
+buf.write(str) //写入
+buf.toString() // 读取
+buf.copy(target) // 把buf的内容赋值给target
+```
+
+# 4. fs模块
+
+```javascript
+const fs = require('fs')
+```
+
+## 1. `readFile 全部读取到内存`
+
+```javascript
+fs.readFile('路径', (err, data)=>{
+    if(err){
+        throw err
+    }
+    console.log(data)
+})
+// 同步
+let data = fs.readFileSync(路径)
+```
+
+## 2.  `stat 文件信息`
+
+```javascript
+fs.stat(路径, (err, stat)=>{
+    if(err){
+        throw err
+    }
+    stat.isFile() // 是否是文件
+    stat.isDirectory() // 是否是文件夹
+})
+// 同步
+let stat = fs.stat(路径)
+```
+
+## 3.  `writeFile 写文件 `
+
+```javascript
+fs.writeFile(路径， 数据， err=>{})
+```
+
+## 4. `unlink 删除文件`
+
+```javascript
+fs.unlink(路径， err=>{})
+```
+
+## 5. `readdir 获取目录`
+
+```javascript
+fs.readdir(路径, (err, files)=>{
+    // files是一个数组，不包含子文件夹
+})
+```
+
+## 6. `mkdir 创建文件夹`
+
+```javascript
+fs.mkdir(路径, err=>{})
+```
+
+## 7. `rmdir 删除空文件夹`
+
+```javascript
+fs.rmdir(路径 err=>{})
+```
+
+## 8. 读写流
+
+```javascript
+// 读取流
+let readStream = fs.createReadStream()
+// 每64kb触发一次
+readStream.on('data', (data)=>{})
+readStream.on('end', ()=>{})
+readStream.on('error', ()=>{})
+// 写入流
+let writeStream = fs.createWriteStream()
+// 注意写入完成事件时finish
+writeStream.on('finish', ()=>{})
+writeStream.on('error', ()=>{})
+```
+
+## 9. 管道流
+
+基于读写流,， 在读取流和写入流之间左连接作用。
+
+```javascript
+readStream.pipe(writeStream)//读取写入
+```
+
+## 10. 链式流
+
+读取和链式流之间的中间操作
+
+```javascript
+let zlib = require('zlib');// 压缩模块
+let zip = zlib.createGzip();
+readStream.pipe(zip).pipe(writeStream)//中间压缩再写入
+```
+
+# 5. Path模块
+
+```javascript
+normalize()  规范化路径 
+join()
+dirname      当前文件所在目录
+basename     文件名 
+extname      文件扩展名
+```
 
 
 
+# 6. URL模块
+
+```javascript
+let url = require('url')
+let urlObj = url.parse('https://xxxx')
+```
+
+```javascript
+url对象属性方法：
+// href 完整地址
+// protocol 协议 https:
+// host 主机名不带端口 www.baidu.com
+// hostname 主机名带端口  www.baidu.com:443
+// port 端口 443
+// search 查询字符串 ?name=xxx&pwd=123
+// hash 哈希 #sda
+// pathname 文件路径 /sd/ssd/
+```
+
+# 7. http 服务器
+
+## 1. 常见状态码
+
+```javascript
+1) 200  请求成功（***）
+
+2）304  缓存 （***）
+
+3）403  服务器拒绝访问（没有权限）
+4）404  找不到资源（地址url错误）（***）
+5）405  服务器不支持请求方式
+
+6）500 内部服务器错误
+```
+
+## 2. 创建服务器
+
+```javascript
+const http = require('http');
+const server = http.createServer((req, res)=>{
+    
+});
+server.listen(3000, ()=>console.log(....))
+```
+
+```javascript
+res对象响应时
+//响应数据
+// 纯文本  
+res.writeHead(200, {"Content-Type":"text/plain"});
+// html
+res.writeHead(200, {"Content-Type":"text/html; charset=utf-8"});
+// json（*****）
+res.writeHead(200, {"Content-Type":"text/json"});
+// 图片
+res.writeHead(200, {"Content-Type":"image/png"}); 
+或者：
+res.writeHead(200, {"Content-Type":"image/jpg"}); 
+// 然后发送数据
+res.write()
+// 不要忘了结束
+res.end()
+```
+
+## 3. 发送请求
+
+```javascript
+// 发送get请求
+http.get(url, (response)=>{
+    let res = '';
+    // 这里的响应是一个数据流不能直接获取
+    // 要在data事件中获取
+    response.on('data', (data)=>{
+        res += data
+    })
+    response.on('end', ()=>{
+        
+    })
+    // 或者使用数据流写入文件
+    response.pipe(writeStream)
+})
+```
+
+# 8.express
+
+## 1. 简单使用
+
+```javascript
+const express = require('express');
+const app = express();
+app.get('/请求的url', (req, res) => {
+    // req是请求对象
+    // res是响应对象
+    // res.send() 后端响应（发送）数据给前端
+})
+app.lisetn(3000, ()=>console.log())
+```
+
+## 2. 使用脚手架
+
+`express-generator`
+
+```javascript
+1. 安装 cnpm i express-generator -g
+2. 使用 express 项目文件夹名 -e 
+3. cd 项目目录
+4. cnpm i 安装模块
+5. npm start启动
+```
+
+路由配置
+
+```javascript
+// routes文件夹 >>> 
+router.get(url, (req, res)=>{
+    
+})
+router.post(url, (req, res)=>{
+    
+})
+```
+
+## 3. 响应对象
+
+`res.send()` 用于给前端发送数据 可以是各种格式的数据(*****)
+`res.json()` 响应json格式数据给前端
+`res.jsonp()` 响应json格式的数据给前端 主要用于跨域请求
+`res.render('ejs模板文件', {json格式的数据})`;  ejs模板 和 数据合并渲染 发送给前端（浏览器端）(***)
+`res.downLoad('文件的路径', '文件重命名')`
+`res.redirect()`  重定向  你请求这个网址 直接跳转到另外一个网址
+
+## 4. 请求对象
+
+主要两个属性
+
+```javascript
+// 对于get请求
+req.query // 获取参数
+// 对其有post
+req.body // 获取参数
+```
+
+==注意==
+
+`req.body`只能正确获取表单数据格式也就是`key=value&key=value`
+
+```javascript
+// 这样可以获取数据
+xhr.send('key=value&key=value')
+// 如果这样 就获取不到数据
+xhr.send(JSON.stringfiy({name:'xx',age:12}))
+// 需要使用其他模块 body-parser
+```
+
+# 9. mongoDB
+
+## 1. 常用命令
+
+-   查看数据库 `show dbs`
+-   切换数据库 `use database` 如果没有就会创建 没有数据就看不见
+-   查看当前数据库集合 `show collections`  没有数据就看不见
+-   查找数据 `db.集合名.find(查询条件)`不写条件查询的是所有
+-   删除数据 `db.集合名.remove(条件)`不写条件，只写一个大括号删除全部
+-   删除集合 `db.集合名.drop()`
+-   删除数据库 `db.runCommand({dropDatabase:1})`
+-   修改 `db.集合名.update(条件, 新值)`将旧值全部替换为新值
+
+## 2. 高级命令
+
+-   大于值 `db.集合名.find({ age:{$gt:30} })`
+-   小于值 `db.集合名.find({ age:{$lt:30} })`
+-   大于等于值 `db.集合名.find({ age:{$gte:30} })`
+-   小于等于值 `db.集合名.find({ age:{$lte:30} })`
+-   两个值之间 `db.集合名.find({ age:{$gt:30, $lt:40} })`
+-   不等于值 `db.集合名.find({ age:{$ne:30} })`
+-   除10余1的值 `db.集合名.find({ age:{$mod:[10, 1]} })`
+-   值在10, 20, 30中的 `db.集合名.find({ age:{$in:[10, 20, 30]} })`
+-   值不在10, 20, 30中的 `db.集合名.find({ age:{$nin:[10, 20, 30]} })`
+-   值是数组且长度为3  `db.集合名.find({ age:{$size:3} })`
+-   存在age属性的 `db.集合名.find({ age:{$exists:true} })`
+-   age为30或者name为xxx的某个值  `db.集合名.find({ $or: [{age:30}, {name:xxx}] })`
+-   内嵌属性  `db.集合名.find({relation.parents: xxxx})`
+-   排序 `db.collection.find().sort({ "key1" : -1 ,"key2" : 1 })   `降序-1，升序1=
+
+## 3. 编程操作数据库
+
+主要使用`mongoose`
+
+```javascript
+const mongoose = require('mongoose');
+// 连接数据库
+// 链接地址后面写的是数据库名，没有就会创建
+mongoose.connect('mongodb://localhost:27017/database',(err)=>{
+    if(err) {
+        throw err
+    }else {
+        console.log('成功')
+    }
+});
+// 定义骨架
+const schema = new mongoose.Schema({
+    name:String,
+    age:{
+        type:Number,
+        required:true
+    }
+})
+// 发布模型
+const model = mongoose.model('xxx', schema, 'xxx')// 第三个参数是集合名 没有就会创建
+```
+
+数据库主要操作
+
+```javascript
+// 增加
+const instance = new model({
+    name:'ooo',
+    age:1121231
+})
+instance.save(err=>{
+    if(err){
+        throw err
+    }else {
+        console.log('成功')
+    }
+})
+
+// 删除
+model.findByIdAndRemove('id').then(err=>{
+    ...
+})//或者先查找出在remove
+
+// 修改
+model.findByIdAndUpdate('id').then()
+// 查询
+model.find({条件，和dos指令一样}).tenh((err.data)=>{})
+model.findById('id').sort().skip().limit().exec((err, data)// exec链式操作
+```
 
