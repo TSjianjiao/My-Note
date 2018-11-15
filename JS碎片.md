@@ -346,6 +346,10 @@ onmousemove 事件在鼠标移动到 **div** 元素上时触发。
 
 ## 10. 进制转换
 
+十进制`=>`任何进制
+
+任何进制`=>`十进制
+
 ```javascript
 let a = 10;
 console.log(a.toString(2)); // 转二进制
@@ -1662,5 +1666,159 @@ arr.find(item=>item['a'])
 arr.findIndex(item=>item['a'])
 ```
 
+## 32. NAN和Map
 
+首先`Map`是一种数据结构，和对象的区别就是可以使用任何值作为键名
+
+```javascript
+// 数据必须是[[key1, val1], [key2, val2], [key3, val3]]
+let newMap = new map([
+    [1, "xxx"],
+    [{name:'xxx'}, 123]
+])
+```
+
+虽然`NaN`不等于任何值，甚至它本身，但是`NaN`在`Map`中却可以相等
+
+```javascript
+let newMap = new Map([
+    [NaN, true]
+])
+newMap.get(NaN)//=>true
+newMap.get('xx')//=>undefined
+// 很明显这个方法可以用来判断一个变量的值是不是NaN
+```
+
+## 33. 函数防抖和节流
+
+### 33.1 函数防抖`Debounce`
+
+-   多次触发只实现一次。
+
+-   要是很长一段时间内一直在触发，那么函数将一直不会调用，直到触发结束
+
+![](E:\培训\笔记图\函数防抖.png)
+
+### 33.2 函数节流`Throttle`
+
+-   **规定的一段时间内**多次触发只实现一次。
+
+-   要很长一段时间一直在触发，只要还在规定的时间内，就只会触发一次。
+
+### 33.3 什么时候应该使用它们
+
+大多数情况下使用节流会比较多
+
+-   [无限下拉](https://codepen.io/dcorb/pen/eJLMxa)，当用户触发更多加载的时候很有可能仍然在滚动滚轮，但是显然不需要让函数继续触发。所以设置一个时间段，在这个时间段里面无论触发多少次，函数只会执行一次。-------------函数节流
+-   `scorll`事件，和上面的无限下拉一样---------函数节流
+-   [`resize`事件](https://codepen.io/dcorb/pen/XXPjpd)，大多数情况下如果需要在浏览器改变大小后做出相应的动作，并不需要实时跟着浏览器大小做出反馈。一般也就是尺寸更改完成后再调用函数。所以针对`完成后`这个词，我们可以让事件触发很多次但是只调用一次函数且不管用户拖动了多久才放开鼠标。----------------函数防抖
+
+### 33.4 实现
+
+#### 1. 函数防抖
+
+思路：在定时器的一段时间内无论触发多少次都不会调用函数，但是在没有触发后的delay时间后调用函数。
+
+```javascript
+// 函数防抖基础版
+function debounce(fn, delay) {
+    return ()=>{
+        if(fn.timerId) clearTimeout(fn.timerId);
+        fn.timerId = setTimeout(()=>{fn()}, delay)
+    }
+}
+function  handler() {console.log('11')}
+window.onscorll = debounce(handler, 500);
+```
+
+==但是==由于有定时器的原因，调用函数的时候`this`指向了全局，但是比如在事件中想要`this`指向事件源，就需要将函数的`this`指向改变。
+
+```javascript
+// 增加this绑定和参数输入
+function debounce(fn, delay, ...args) {//增加一个参数，fn的参数 //收集所有剩余参数至数组args
+    return function () {
+        let _this = this;// 保存this
+        if(fn.timerId) clearTimeout(fn.timerId);
+        fn.timerId = setTimeout(fn.bind(_this, ...args), delay)// 使用bind，当然也可以使用apply和call只不过要包裹一层匿名函数
+    }
+}
+function  handler(v1, v2, v3) {console.log(v1, v2, v3)}//=> 'XXX' 'ooo' 'ppp'
+window.onscorll = debounce(handler, 500, 'XXX', 'ooo', 'ppp');
+```
+
+至此基本的**函数防抖**已经完成。我们还可以增加功能
+
+```javascript
+// 试验上面的代码可以发现 第一次触发只会在动作停止之后
+// 有时候我们想要动作的第一次就触发，如下图
+function debounce(fn, delay, immediate = false, ...args) {
+    return function () {
+        let _this = this;
+        if(fn.timerId) clearTimeout(fn.timerId);
+        // 主要就是这个if
+        if(immediate) {
+            let flag = !fn.timerId;// 首次进入时id肯定是没有的
+            if(flag) fn.call(_this, ...args);// 就执行一次
+            fn.timerId = setTimeout(()=>fn.timerId = null, delay)// 停止动作后一段时间，将id清除，这样下次就能再次触发了
+        }else {
+            fn.timerId = setTimeout(fn.bind(_this, ...args), delay)
+        }
+    }
+}
+function  handler(v1, v2, v3) {console.log(v1, v2, v3)}//=> 'XXX' 'ooo' 'ppp'
+window.onscorll = debounce(handler, 500, 'XXX', 'ooo', 'ppp');
+```
+
+![1542280862386](C:\Users\dell\29237\笔记\My-Note\函数防抖立即.png)
+
+有时候需要函数的返回值
+
+```javascript
+function debounce(fn, delay, immediate = false) {
+    return function (...args) {// 和上面不一样了 直接在返回的函数中接受参数
+        let _this = this;
+        let res;
+        if(fn.timerId) clearTimeout(fn.timerId);
+        if(immediate) {
+            let flag = !fn.timerId;
+            if(flag) res = fn.apply(_this, args);// 调用的地方接受返回值
+            fn.timerId = setTimeout(()=>fn.timerId = null, delay)
+        }else {
+            fn.timerId = setTimeout(()=>{res = fn.apply(_this, args)}, delay)// 调用的地方接受返回值
+        }
+        return res// 返回
+    }
+}
+input.addEventListener('input', ()=>{
+    // 由于结构不一样，传参数需要再调一次()
+    console.log(debounce(print, 500, true)('1', '2', '3'))//=> [1, 2, 3]
+})
+function print(data1, data2, data3) {
+    return [data1, data2, data3]
+}
+```
+
+
+
+#### 2. 函数节流
+
+```javascript
+function throttle(fn, delay) {
+    let last;
+    return (...args) => {
+        let _this = this;
+        let now = Date.now();
+        if (last && now < last + delay) {
+            clearTimeout(fn.timerId);
+            fn.timerId = setTimeout(() => {
+                fn.apply(_this, args);
+                last = now;
+            }, delay)
+        } else {
+            last = now;
+            fn.apply(_this, args);
+        }
+    }
+}
+```
 
