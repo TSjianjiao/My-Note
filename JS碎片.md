@@ -1820,6 +1820,7 @@ function throttle(fn, delay) {
             //2.进入一次定时器后由于last被重新赋值，由于定时器走过了delay时间，所以此时的now>=last+delay
             //又会进入一次
             //3. 或者一直触发事件，上面的if会一直运行直到now>last+delay,就会运行这里
+            clearTimeout(timerId);// 防止条件3进入后触发两次函数
             last = now;
             fn.apply(_this, args);
         }
