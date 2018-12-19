@@ -105,21 +105,21 @@ vm.a = 2 // a被修改为2 Vue对象也会改变
 
 [生命周期图示](.\lifecycle.png)
 
-:arrow_up_small: 实例对象前beforeCreated：
+:arrow_up_small: 实例对象前beforeCreated：1.`this`还没挂载`data`中的属性（没有监听数据）2.`new Vue`后就会调用
 
-:arrow_up_small: 实例对象后created：
+:arrow_up_small: 实例对象后created：	1.`data`挂载完成（开始监听数据）2.可以对数据进行操作（如发送ajax）
 
-:star: 模板被渲染前beforeMount:
+:star: 模板被渲染前beforeMount:	1.`template`内的代码被编译成`html`但是未渲染
 
-⭐️ 模板被渲染后mounted:
+⭐️ 模板被渲染后mounted:  	1. 渲染完成
 
-:boxing_glove:模板数据被更新前beforeUpdate:
+:boxing_glove:模板数据被更新前beforeUpdate:	1. 数据发生变化即将重绘
 
-:boxing_glove:模板数据被更新后updated:
+:boxing_glove:模板数据被更新后updated: 	1. 进行重绘后
 
-:arrow_double_down:实例被销毁前(vm.$destroy())beforeDestroy:
+:arrow_double_down:实例被销毁前(vm.$destroy())beforeDestroy: 	1.`v-if`销毁组件
 
-:arrow_double_down:实例被销毁后destroyed:
+:arrow_double_down:实例被销毁后destroyed:1.通常用来资源回收（如停止计时器)
 
 ```javascript
 new Vue({
@@ -248,9 +248,9 @@ var vm = new Vue({
 
 也可以使用methods 属性定义方法，`{{aa()}}`调用，是一样的结果。
 
-==但是==computed是依赖于它所绑定的元素的，如多次访问方法`a(){return Date.now()}`，返回的值肯定都不一样，而多次访问绑定了`data：{a:Date.now}`的计算属性时，只要a没有更新他就不会更新
+==但是==computed是依赖于它所绑定的元素的，如多次访问方法`a(){return Date.now()}`，返回的值肯定都不一样，而多次访问绑定了`data：{a:Date.now}`的计算属性时，**只要a没有更新他就不会更新**==会缓存结果==
 
-==而且==computed，只要在他的方法里面写的所有的变量，以改变都能触发，但是watch只能监听一个变量
+==而且==computed，只要在他的方法里面写的所有的变量，一改变都能触发，但是watch只能监听一个变量
 
 ## 3 . 侦听器 watch  
 
@@ -988,7 +988,7 @@ export default {
 ```xml
 <template>
   <div class="hello">
-    <h1>{{ msgA }}</h1>  
+    <h1>{{ msgA }}</h1>  <!--直接像在data中的数据一样 直接使用-->
   </div>
 </template>
 ```

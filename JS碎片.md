@@ -1836,3 +1836,13 @@ let fn = throttle(fn, delay)
 fn(args)//不然会发生无法使用的情况
 ```
 
+## 34. reduce方法
+
+```javascript
+list[{}, {}, {}]
+this.list.reduce((total, cur)=>{
+    return total + cur.num * cur.price
+}, 0)// 第一个参数是一个回调函数，回调函数第一个值是总数， 第二个值是当前元素
+// 默认情况下会从索引为1的元素开始相加，所以最好都指定第二个参数--初始索引为0
+```
+
